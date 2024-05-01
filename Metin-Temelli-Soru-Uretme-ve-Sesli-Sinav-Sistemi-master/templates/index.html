@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ana Sayfa</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">Metin Temelli Soru Üretme ve Sesli Sınav Sistemi</h1>
+        
+        <hr>
+        
+        <form id="metinForm" method="POST" action="/save-text">
+            <div class="form-group">
+                <label for="metin">Metin Girin:</label>
+                <textarea class="form-control" id="metin" name="metin" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Soru Oluştur</button>
+        </form>
+
+        <!-- Kutu içinde soruların görüntüleneceği bölüm -->
+        <div id="sorularBox" style="display: none; margin-top: 20px; border: 1px solid #ccc; padding: 10px;"></div>
+
+        <!-- Loader gösterim alanı -->
+        <div id="loader" style="display: none; text-align: center;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <p id="loadingText">Sorular Oluşturuluyor...</p>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap JS ve jQuery (isteğe bağlı) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        // Form gönderildiğinde soruUret() fonksiyonunu çağır
+        document.getElementById('metinForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Formun otomatik olarak gönderilmesini engelle
+            soruUret(); // soruUret() fonksiyonunu çağır
+        });
+    
+        // soruUret() fonksiyonu
+        function soruUret() {
+            // Loader'ı göster
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('sorularBox').style.display = 'none';
+
+            // AJAX kullanarak /save-text endpoint'ine POST isteği gönder
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/save-text', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    // Loader'ı gizle
+                    document.getElementById('loader').style.display = 'none';
+                    document.getElementById('sorularBox').style.display = 'block';
+                    document.getElementById('loadingText').innerText = 'Sorular Oluşturuldu'; // Mesajı güncelle
+                    setTimeout(function() {
+                        window.location.href = '/sorular.html'; // 2 saniye sonra sorular.html sayfasına yönlendir
+                    }, 2000);
+                }
+            };
+            // Form verilerini al ve POST isteği ile gönder
+            var formData = new FormData(document.getElementById('metinForm'));
+            xhr.send(new URLSearchParams(formData).toString());
+        }
+    </script>
+</body>
+</html>

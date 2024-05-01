@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorular</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        #sorularBox {
+            overflow-y: auto;
+            max-height: 400px; /* Sağ taraftaki soruların maksimum yüksekliği */
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Seçim Alanı</h2>
+                <div id="tumSorular" style="margin-top: 20px;"></div>
+            </div>
+            <div class="col-md-6">
+                <h2>Seçilen Sorular</h2>
+                <div id="secilenSorular" style="margin-top: 20px;">
+                    <select id="secilenSorularList" multiple style="width: 100%;"></select> <!-- Seçim kutusu -->
+                </div>
+                <button class="btn btn-primary mt-3" onclick="kaydetVeBaslat()">Okuma Sınavı Başlat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS ve jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <script>
+        var tumSorular = []; // Tüm soruları tutacak dizi
+        var secilenSorular = []; // Seçilen soruları tutacak dizi
+
+        // Sayfa yüklendiğinde tüm soruları göster
+        window.onload = function() {
+            showTumSorular();
+        };
+
+        // Tüm soruları gösteren fonksiyon
+        function showTumSorular() {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    tumSorular = xhr.responseText.split('\n');
+                    // Tüm soruları ekrana yazdır
+                    document.getElementById('tumSorular').innerHTML = generateSorularHTML(tumSorular);
+                }
+            };
+            xhr.open('GET', '/get-tum-sorular', true);
+            xhr.send();
+        }
+
+        // Seçilen soruları gösteren fonksiyon
+        function showSecilenSorular() {
+            // Seçilen soruları ekrana yazdır
+            document.getElementById('secilenSorularList').innerHTML = generateSelectedSorularHTML(secilenSorular);
+        }
+
+        // HTML olarak tüm soruları oluştur
+        function generateSorularHTML(sorular) {
+            var html = '<ul>';
+            for (var i = 0; i < sorular.length; i++) {
+                var soru = sorular[i].trim(); // Metinlerin başındaki ve sonundaki boşlukları temizle
+                if (soru) {
+                    html += '<li><input type="checkbox" onchange="secilenSorulariGuncelle(this, ' + i + ')"> ' + soru + '</li>';
+                }
+            }
+            html += '</ul>';
+            return html;
+        }
+
+        // HTML olarak seçilen soruları oluştur
+        function generateSelectedSorularHTML(secilenSorular) {
+            var html = '';
+            for (var i = 0; i < secilenSorular.length; i++) {
+                html += '<option>' + secilenSorular[i] + '</option>';
+            }
+            return html;
+        }
+
+        // Seçilen soruları güncelleyen fonksiyon
+        function secilenSorulariGuncelle(checkbox, index) {
+            var soru = tumSorular[index];
+            if (checkbox.checked) {
+                secilenSorular.push(soru); // Seçilen soruyu seçilenler listesine ekle
+            } else {
+                secilenSorular.splice(secilenSorular.indexOf(soru), 1); // Seçilen soruyu seçilenler listesinden çıkar
+            }
+            showSecilenSorular(); // Seçilen soruları yeniden göster
+        }
+
+        // Seçilen soruları kaydedip okuma sınavını başlatan fonksiyon
+        function kaydetVeBaslat() {
+            // Seçilen soruları secilenSorular.txt dosyasına kaydet
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    // Dosyaya kaydedildikten sonra secilenSorular.html sayfasına yönlendir
+                    window.location.href = 'okumaSinavi.html';
+                }
+            };
+            xhr.open('POST', '/kaydet-secilen-sorular', true);
+            xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+            xhr.send('secilenSorular=' + JSON.stringify(secilenSorular));
+        }
+    </script>
+</body>
+</html>

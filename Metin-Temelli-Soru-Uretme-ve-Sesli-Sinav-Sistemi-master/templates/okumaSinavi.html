@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Okuma Sınavı</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        .container {
+            margin-top: 50px;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        .btn {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        Sorular
+                    </div>
+                    <div class="card-body">
+                        <form id="questionForm">
+                            <div id="questionRadioButtons">
+                                <!-- Seçilen sorular burada listelenecek -->
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <button id="answerButton" class="btn btn-primary">Cevapla</button>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        Cevaplar
+                    </div>
+                    <div class="card-body">
+                        <ul id="answerList" class="list-group"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS ve jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <script>
+        // Metin ve soruları tutacak değişkenler
+        var questions = []; 
+        var answers = []; 
+
+        // Metin ve soruları yükle
+        function loadQuestions() {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    var lines = xhr.responseText.split('\n');
+                    for (var i = 0; i < lines.length; i++) {
+                        var line = lines[i].trim();
+                        if (line !== '') {
+                            questions.push(line);
+                        }
+                    }
+                    showQuestions();
+                }
+            };
+            xhr.open('GET', '/get-secilenSorular', true);
+            xhr.send();
+        }
+
+        // Soruları göster
+        function showQuestions() {
+            var questionRadioButtons = document.getElementById('questionRadioButtons');
+            for (var i = 0; i < questions.length; i++) {
+                var radioDiv = document.createElement('div');
+                radioDiv.classList.add('form-check');
+                var radioInput = document.createElement('input');
+                radioInput.type = 'radio';
+                radioInput.name = 'questionRadio';
+                radioInput.id = 'questionRadio' + i;
+                radioInput.value = questions[i];
+                radioDiv.appendChild(radioInput);
+                var radioLabel = document.createElement('label');
+                radioLabel.htmlFor = 'questionRadio' + i;
+                radioLabel.textContent = questions[i];
+                radioDiv.appendChild(radioLabel);
+                questionRadioButtons.appendChild(radioDiv);
+            }
+        }
+
+        // Cevapları kontrol et
+        function checkAnswer() {
+            var radios = document.getElementsByName('questionRadio');
+            var userAnswer;
+            for (var i = 0; i < radios.length; i++) {
+                if (radios[i].checked) {
+                    userAnswer = radios[i].value;
+                    break;
+                }
+            }
+            var questionIndex = questions.indexOf(userAnswer);
+            if (userAnswer && answers[questionIndex] && userAnswer.toLowerCase() === answers[questionIndex].toLowerCase()) {
+                alert('Doğru!');
+            } else {
+                alert('Yanlış!');
+            }
+        }
+
+        // Sayfa yüklendiğinde işlemleri başlat
+        window.onload = function() {
+            loadQuestions();
+            document.getElementById('answerButton').addEventListener('click', checkAnswer);
+        };
+    </script>
+</body>
+</html>
