@@ -72,7 +72,7 @@ def get_tum_sorular():
 def soruUret():
     global globalSorular
     aqg = aqgFunction.AutomaticQuestionGenerator()
-    with open("sorular.txt", "w", encoding="utf-8") as file:
+    with open("sorular.txt", "w", encoding="utf-8") as soruDosyasi, open("cevaplar.txt", "w", encoding="utf-8") as cevapDosyasi:
         textAl = open("metin.txt").read()
         translated_text = GoogleTranslator(source='auto', target='en').translate(textAl)
         sorular = aqg.aqgParse(translated_text)
@@ -80,15 +80,12 @@ def soruUret():
         translated_sorular = translate_text_2d_array(sorular)
         soruFormatindaSorular = aqg.display(translated_sorular)
         for j in range(len(translated_sorular)):
-            file.write(translated_sorular[j][0] + '\n')
+            soruDosyasi.write(translated_sorular[j][0] + '\n')
+            if translated_sorular[j][1]:  # Eğer cevap boş değilse
+                cevapDosyasi.write(translated_sorular[j][1] + '\n')
             print(translated_sorular)
             print("234")
 
-      #  with open("cevaplar.txt", "w", encoding="utf-8") as file:
-            # Dizideki her bir alt liste için
-      #      for alt_liste in translated_sorular:
-                # Alt listenin ikinci elemanı dosyaya yaz
-      #          file.write(alt_liste[1] + "\n")
 
 def translate_text_2d_array(text_2d_array, target_language='tr'):
     translated_texts = []
