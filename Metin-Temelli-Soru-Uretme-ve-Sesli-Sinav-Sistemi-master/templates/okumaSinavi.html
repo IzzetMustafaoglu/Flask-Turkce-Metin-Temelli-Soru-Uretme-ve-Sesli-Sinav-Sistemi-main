@@ -42,8 +42,8 @@
                     <div class="card-header">
                         Cevaplar
                     </div>
-                    <div class="card-body">
-                        <ul id="answerList" class="list-group"></ul>
+                    <div class="card-body" id="answerResult">
+                        <!-- Cevap sonucu burada gösterilecek -->
                     </div>
                 </div>
             </div>
@@ -75,7 +75,7 @@
                     showQuestions();
                 }
             };
-            xhr.open('GET', '/get-secilenSorular', true);
+            xhr.open('GET', '/get-sorular', true);
             xhr.send();
         }
 
@@ -111,16 +111,51 @@
             }
             var questionIndex = questions.indexOf(userAnswer);
             if (userAnswer && answers[questionIndex] && userAnswer.toLowerCase() === answers[questionIndex].toLowerCase()) {
-                alert('Doğru!');
+                showResult('Doğru!');
             } else {
-                alert('Yanlış!');
+                showResult('Yanlış!');
             }
+        }
+
+        // Sesi metne dönüştür
+        function convertSpeechToText() {
+            var recognition = new webkitSpeechRecognition() || SpeechRecognition();
+            recognition.lang = 'tr-TR'; // Türkçe için tanıma yapılacak dil
+            recognition.onresult = function(event) {
+                if (event.results.length > 0) {
+                    var spokenText = event.results[0][0].transcript;
+                    compareAnswer(spokenText);
+                }
+            };
+            recognition.start();
+        }
+
+        // Cevabı karşılaştır
+        function compareAnswer(spokenText) {
+            var questionIndex = questions.findIndex(function(question) {
+                return question.toLowerCase() === spokenText.toLowerCase();
+            });
+            if (questionIndex !== -1) {
+                if (answers[questionIndex]) {
+                    showResult('Doğru!');
+                } else {
+                    showResult('Yanlış!');
+                }
+            } else {
+                showResult('Sorunun cevabını tanıyamadım.');
+            }
+        }
+
+        // Cevap sonucunu göster
+        function showResult(result) {
+            var answerResult = document.getElementById('answerResult');
+            answerResult.textContent = result;
         }
 
         // Sayfa yüklendiğinde işlemleri başlat
         window.onload = function() {
             loadQuestions();
-            document.getElementById('answerButton').addEventListener('click', checkAnswer);
+            document.getElementById('answerButton').addEventListener('click', convertSpeechToText);
         };
     </script>
 </body>

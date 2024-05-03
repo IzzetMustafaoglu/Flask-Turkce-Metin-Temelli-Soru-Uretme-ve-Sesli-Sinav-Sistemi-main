@@ -1,1 +1,1 @@
-["İzzet kimin adıdır?"]
+["Selim kimin adı?","Selim kimdir?"]

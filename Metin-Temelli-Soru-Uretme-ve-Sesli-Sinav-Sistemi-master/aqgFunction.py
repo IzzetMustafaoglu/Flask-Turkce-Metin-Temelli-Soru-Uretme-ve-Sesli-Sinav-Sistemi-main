@@ -186,7 +186,7 @@ class AutomaticQuestionGenerator():
         print("End  OutPut")
         print("-----X-----\n\n")
 
-        output = "C:/Users/izzet/OneDrive/Masaüstü/asdf/Metin-Temelli-Soru-Uretme-ve-Sesli-Sinav-Sistemi-master/DB/output.txt"
+        output = "C:/Users/izzet/OneDrive/Masaüstü/Flask-Turkce-Metin-Temelli-Soru-Uretme-ve-Sesli-Sinav-Sistemi-main/Metin-Temelli-Soru-Uretme-ve-Sesli-Sinav-Sistemi-master/DB/output.txt"
 
         w = open(output, 'w+', encoding="utf8")
         w.write(out)
