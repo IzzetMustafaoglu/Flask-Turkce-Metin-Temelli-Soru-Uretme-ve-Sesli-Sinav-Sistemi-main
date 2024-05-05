@@ -22,6 +22,7 @@ import io
 from ffmpeg import input, output
 
 
+
 globalSorular = []
 
 app = Flask(__name__)
@@ -68,6 +69,14 @@ def get_tum_sorular():
     except Exception as e:
         return str(e), 500  # 500 hatası: Sunucu hatası
 
+@app.route('/get-cevaplar', methods=['GET'])
+def get_cevaplar():
+    try:
+        with open('cevaplar.txt', 'r', encoding='utf-8') as file:
+            cevaplar = file.read()
+        return cevaplar
+    except Exception as e:
+        return str(e), 500  # 500 hatası: Sunucu hatası
 
 def soruUret():
     global globalSorular

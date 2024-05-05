@@ -75,7 +75,7 @@
                     showQuestions();
                 }
             };
-            xhr.open('GET', '/get-sorular', true);
+            xhr.open('GET', '/get-sorular', true); // Sunucudan soruları çekmek için endpoint belirtin
             xhr.send();
         }
 
@@ -99,35 +99,63 @@
             }
         }
 
+        // Cevapları yükle
+        function loadAnswers() {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    var lines = xhr.responseText.split('\n');
+                    for (var i = 0; i < lines.length; i++) {
+                        var line = lines[i].trim();
+                        if (line !== '') {
+                            answers.push(line);
+                        }
+                    }
+                }
+            };
+            xhr.open('GET', '/get-cevaplar', true); // Sunucudan cevapları çekmek için endpoint belirtin
+            xhr.send();
+        }
+
+        // Ses kaydı yap ve cevapları kontrol et
+        function recordAndCheckAnswer() {
+            // Kullanıcıya ses kaydı yapılacağına dair bir uyarı göster
+            alert("Lütfen cevabınızı ses kaydı yaparak verin.");
+
+            // Ses kaydını yap
+            var recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition || window.mozSpeechRecognition || window.msSpeechRecognition)();
+            recognition.lang = 'tr-TR'; // Türkçe dil desteği
+            recognition.interimResults = false; // Sonuçları anında al
+
+            recognition.onresult = function(event) {
+                var userAnswer = event.results[0][0].transcript; // Kullanıcının verdiği cevap
+
+                // Cevapları kontrol et
+                checkAnswer(userAnswer);
+            };
+
+            recognition.start(); // Ses kaydını başlat
+        }
+
         // Cevapları kontrol et
-        function checkAnswer(audioURL) {
+        function checkAnswer(userAnswer) {
             var radios = document.getElementsByName('questionRadio');
-            var userAnswer;
+            var selectedAnswer;
+
+            // Seçilen cevabı bul
             for (var i = 0; i < radios.length; i++) {
                 if (radios[i].checked) {
-                    userAnswer = radios[i].value;
+                    selectedAnswer = radios[i].value;
                     break;
                 }
             }
-            var questionIndex = questions.indexOf(userAnswer);
+
+            // Seçilen cevabın doğruluğunu kontrol et
+            var questionIndex = questions.indexOf(selectedAnswer);
             if (questionIndex !== -1) {
-                var recognition = new webkitSpeechRecognition() || SpeechRecognition();
-                recognition.lang = 'tr-TR'; // Türkçe için tanıma yapılacak dil
-                recognition.onresult = function(event) {
-                    if (event.results.length > 0) {
-                        var spokenText = event.results[0][0].transcript;
-                        var answerIndex = answers.findIndex(function(answer) {
-                            return answer.toLowerCase() === spokenText.toLowerCase();
-                        });
-                        if (answerIndex !== -1 && answerIndex === questionIndex) {
-                            showResult('Doğru!', spokenText);
-                        } else {
-                            var correctAnswer = answers[questionIndex] || 'Bilinmiyor';
-                            showResult('Yanlış!', spokenText, correctAnswer);
-                        }
-                    }
-                };
-                recognition.start();
+                var correctAnswer = answers[questionIndex] || 'Bilinmiyor';
+                var result = userAnswer.toLowerCase() === correctAnswer.toLowerCase() ? 'Doğru!' : 'Yanlış!';
+                showResult(result, userAnswer, correctAnswer);
             } else {
                 showResult('Sorunun cevabını tanıyamadım.', '');
             }
@@ -139,14 +167,16 @@
             if (userAnswer === '') {
                 answerResult.textContent = result;
             } else {
-                answerResult.textContent = `${result} Cevabınız: ${userAnswer}. Doğru Cevap: ${correctAnswer}`;
+                answerResult.innerHTML = `${result}<div style="margin-bottom: 20px;"></div>Cevabınız: ${userAnswer}.<div style="margin-bottom: 20px;"></div>Doğru Cevap: ${correctAnswer}`;
+
             }
         }
 
         // Sayfa yüklendiğinde işlemleri başlat
         window.onload = function() {
             loadQuestions();
-            document.getElementById('answerButton').addEventListener('click', checkAnswer);
+            loadAnswers();
+            document.getElementById('answerButton').addEventListener('click', recordAndCheckAnswer);
         };
     </script>
 </body>
