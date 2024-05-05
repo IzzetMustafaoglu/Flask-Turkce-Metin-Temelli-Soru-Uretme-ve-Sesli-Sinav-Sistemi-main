@@ -35,7 +35,6 @@
                         </form>
                     </div>
                 </div>
-                <button id="answerButton" class="btn btn-primary">Cevapla</button>
             </div>
             <div class="col-md-6">
                 <div class="card">
@@ -46,6 +45,7 @@
                         <!-- Cevap sonucu burada gösterilecek -->
                     </div>
                 </div>
+                <button id="answerButton" class="btn btn-primary">Cevapla</button>
             </div>
         </div>
     </div>
@@ -100,7 +100,7 @@
         }
 
         // Cevapları kontrol et
-        function checkAnswer() {
+        function checkAnswer(audioURL) {
             var radios = document.getElementsByName('questionRadio');
             var userAnswer;
             for (var i = 0; i < radios.length; i++) {
@@ -110,52 +110,43 @@
                 }
             }
             var questionIndex = questions.indexOf(userAnswer);
-            if (userAnswer && answers[questionIndex] && userAnswer.toLowerCase() === answers[questionIndex].toLowerCase()) {
-                showResult('Doğru!');
-            } else {
-                showResult('Yanlış!');
-            }
-        }
-
-        // Sesi metne dönüştür
-        function convertSpeechToText() {
-            var recognition = new webkitSpeechRecognition() || SpeechRecognition();
-            recognition.lang = 'tr-TR'; // Türkçe için tanıma yapılacak dil
-            recognition.onresult = function(event) {
-                if (event.results.length > 0) {
-                    var spokenText = event.results[0][0].transcript;
-                    compareAnswer(spokenText);
-                }
-            };
-            recognition.start();
-        }
-
-        // Cevabı karşılaştır
-        function compareAnswer(spokenText) {
-            var questionIndex = questions.findIndex(function(question) {
-                return question.toLowerCase() === spokenText.toLowerCase();
-            });
             if (questionIndex !== -1) {
-                if (answers[questionIndex]) {
-                    showResult('Doğru!');
-                } else {
-                    showResult('Yanlış!');
-                }
+                var recognition = new webkitSpeechRecognition() || SpeechRecognition();
+                recognition.lang = 'tr-TR'; // Türkçe için tanıma yapılacak dil
+                recognition.onresult = function(event) {
+                    if (event.results.length > 0) {
+                        var spokenText = event.results[0][0].transcript;
+                        var answerIndex = answers.findIndex(function(answer) {
+                            return answer.toLowerCase() === spokenText.toLowerCase();
+                        });
+                        if (answerIndex !== -1 && answerIndex === questionIndex) {
+                            showResult('Doğru!', spokenText);
+                        } else {
+                            var correctAnswer = answers[questionIndex] || 'Bilinmiyor';
+                            showResult('Yanlış!', spokenText, correctAnswer);
+                        }
+                    }
+                };
+                recognition.start();
             } else {
-                showResult('Sorunun cevabını tanıyamadım.');
+                showResult('Sorunun cevabını tanıyamadım.', '');
             }
         }
 
         // Cevap sonucunu göster
-        function showResult(result) {
+        function showResult(result, userAnswer, correctAnswer = '') {
             var answerResult = document.getElementById('answerResult');
-            answerResult.textContent = result;
+            if (userAnswer === '') {
+                answerResult.textContent = result;
+            } else {
+                answerResult.textContent = `${result} Cevabınız: ${userAnswer}. Doğru Cevap: ${correctAnswer}`;
+            }
         }
 
         // Sayfa yüklendiğinde işlemleri başlat
         window.onload = function() {
             loadQuestions();
-            document.getElementById('answerButton').addEventListener('click', convertSpeechToText);
+            document.getElementById('answerButton').addEventListener('click', checkAnswer);
         };
     </script>
 </body>

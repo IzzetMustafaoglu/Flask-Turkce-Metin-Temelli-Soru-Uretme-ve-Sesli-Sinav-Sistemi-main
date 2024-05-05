@@ -79,12 +79,15 @@ def soruUret():
 
         translated_sorular = translate_text_2d_array(sorular)
         soruFormatindaSorular = aqg.display(translated_sorular)
-        for j in range(len(translated_sorular)):
-            soruDosyasi.write(translated_sorular[j][0] + '\n')
-            if translated_sorular[j][1]:  # Eğer cevap boş değilse
-                cevapDosyasi.write(translated_sorular[j][1] + '\n')
-            print(translated_sorular)
-            print("234")
+        for soru_cevap in translated_sorular:
+            if len(soru_cevap) >= 2:  # Eğer hem soru hem de cevap mevcutsa
+                soru = soru_cevap[0]  # Soru
+                cevap = soru_cevap[1]  # Cevap
+                soruDosyasi.write(soru + '\n')
+                cevapDosyasi.write(cevap + '\n')
+                print(translated_sorular)
+                print("234")
+
 
 
 def translate_text_2d_array(text_2d_array, target_language='tr'):
